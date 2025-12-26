@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tebak Angka oleh AI</title>
+
+    <style>
+        /* --- 1. GLOBAL STYLE (Tema Dashboard) --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s, color 0.3s;
+            overflow: hidden; /* Mencegah scroll saat animasi robot */
+        }
+
+        /* Default Dark Mode (Sesuai Dashboard) */
+        body, body.dark {
+            background-color: #1D1B20;
+            color: white;
+        }
+
+        /* Light Mode (Opsional, jika user menekan tombol tema) */
+        body.light {
+            background-color: #f5f5f5;
+            color: #222;
+        }
+
+        /* --- 2. TOMBOL KEMBALI --- */
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+        
+        /* Penyesuaian warna tombol kembali saat Light Mode */
+        body.light .back-link {
+            color: #333;
+            border-color: #ccc;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .back-link:hover {
+            background: white;
+            color: #1D1B20;
+        }
+
+        /* --- 3. TYPOGRAPHY & LAYOUT --- */
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+        
+        body.light p { color: #666; }
+
+        /* --- 4. BUTTON STYLES (Glassmorphism Capsule) --- */
+        button {
+            margin: 10px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 30px; /* Bentuk Kapsul */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            font-weight: bold;
+        }
+
+        /* Style Tombol di Dark Mode */
+        body.dark button, body button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Style Tombol di Light Mode */
+        body.light button {
+            background: rgba(0, 0, 0, 0.05);
+            color: #333;
+            border-color: #ccc;
+        }
+
+        /* Hover Effect (Sama seperti Dashboard) */
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        body.dark button:hover {
+            background: white;
+            color: #1D1B20;
+        }
+
+        body.light button:hover {
+            background: #333;
+            color: white;
+        }
+
+        /* Tombol Khusus (Start) agar lebih menonjol */
+        #startBtn {
+            border: 1px solid #4285f4;
+            color: #4285f4;
+        }
+        #startBtn:hover {
+            background: #4285f4;
+            color: white;
+        }
+
+        /* --- 5. GAME AREA (Card Look) --- */
+        #game {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+            text-align: center;
+        }
+        
+        body.light #game {
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        #guessText {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+        body.light #guessText { color: #333; }
+
+        /* Tombol Game Actions */
+        #lowerBtn { border-color: #ea4335; color: #ea4335; } /* Merah */
+        #lowerBtn:hover { background: #ea4335; color: white; }
+
+        #higherBtn { border-color: #4285f4; color: #4285f4; } /* Biru */
+        #higherBtn:hover { background: #4285f4; color: white; }
+
+        #correctBtn { border-color: #34a853; color: #34a853; } /* Hijau */
+        #correctBtn:hover { background: #34a853; color: white; }
+
+
+        /* --- 6. ANIMATIONS & CELEBRATION --- */
+        #output {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            height: 30px;
+        }
+
+        .ai-celebrate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 20px;
+        }
+        
+        .robot {
+            font-size: 80px;
+            animation: dance 1s infinite;
+            filter: drop-shadow(0 0 20px rgba(66, 133, 244, 0.6));
+        }
+        
+        .celebrate-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 15px;
+            letter-spacing: 2px;
+            animation: glow 1.5s infinite alternate;
+        }
+        
+        @keyframes dance {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(10deg) scale(1); }
+            75% { transform: rotate(-10deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        
+        @keyframes glow {
+            0% { color: #ff4081; text-shadow: 0 0 5px #ff4081; }
+            50% { color: #40c4ff; text-shadow: 0 0 15px #40c4ff; }
+            100% { color: #ffd740; text-shadow: 0 0 25px #ffd740; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Kembali</a>
+    <h1> AI Menebak Angka Kamu</h1>
+    <p>Pikirkan angka antara 1-100. AI akan mencoba menebak! </p>
+    <button id="themeBtn"> Ganti Tema</button>
+    <button id="startBtn">Mulai AI Menebak</button>
+    <div id="game" style="display:none;">
+        <p id="guessText"></p>
+        <button id="lowerBtn">Terlalu besar</button>
+        <button id="higherBtn">Terlalu kecil</button>
+        <button id="correctBtn">Benar</button>
+    </div>
+    <div id="output"></div>
+    <div id="celebration" style="display:none;"></div>
+    
+    <script>
+        // ====== Tema ===== //
+        const themeBtn = document.getElementById('themeBtn');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.classList.add(savedTheme);
+        
+        function toggleTheme() {
+            body.classList.toggle('dark');
+            body.classList.toggle('light');
+            const newTheme = body.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+        }
+
+        themeBtn.addEventListener('click', toggleTheme);
+        
+        // ====== Logika AI Tebak Angka ===== //
+        let min = 1;
+        let max = 100;
+        let guess = 0;
+        let steps = 0;
+        
+        const startBtn = document.getElementById('startBtn');
+        const gameDiv = document.getElementById('game');
+        const guessText = document.getElementById('guessText');
+        const lowerBtn = document.getElementById('lowerBtn');
+        const higherBtn = document.getElementById('higherBtn');
+        const correctBtn = document.getElementById('correctBtn');
+        const output = document.getElementById('output');
+        const celebration = document.getElementById('celebration');
+        
+        function makeGuess() {
+            guess = Math.floor((min + max) / 2);
+            steps++;
+            guessText.textContent = `Apakah angkamu ${guess}?`;
+        }
+        
+        function resetCelebration() {
+            celebration.style.display = 'none';
+            celebration.innerHTML = '';
+        }
+        
+        startBtn.addEventListener('click', () => {
+            min = 1;
+            max = 100;
+            steps = 0;
+            gameDiv.style.display = 'block';
+            output.textContent = '';
+            resetCelebration();
+            makeGuess();
+        });
+
+        lowerBtn.addEventListener('click', () => {
+            max = guess - 1;
+            if (min > max) {
+                guessText.textContent = 'Hmm... sepertinya ada kesalahan';
+                return;
+            }
+            makeGuess();
+        });
+        
+        higherBtn.addEventListener('click', () => {
+            min = guess + 1;
+            if (min > max) {
+                guessText.textContent = 'Hmm... sepertinya ada kesalahan';
+                return;
+            }
+            makeGuess();
+        });
+        
+        correctBtn.addEventListener('click', () => {
+            gameDiv.style.display = 'none';
+            guessText.textContent = `AI berhasil menebak angkamu ${guess} dalam ${steps} langkah!`;
+            output.textContent = 'Main lagi? Klik tombol Mulai AI Menebak.';
+            showCelebration();
+        });
+        
+        function showCelebration() {
+            celebration.style.display = 'flex';
+            celebration.classList.add('ai-celebrate');
+            celebration.innerHTML = `
+                <div class="robot">🤖</div>
+                <div class="celebrate-text">AI HEBAT! AKU MENANG</div>
+            `;
+        }
+    </script>
+</body>
+</html>

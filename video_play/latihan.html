@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemutaran Video YouTube Kustom</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1D1B20; 
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Gaya Pemutar */
+        #player-container {
+            width: 100%;
+            max-width: 800px; /* Batas lebar video */
+            background: #000;
+            border-radius: 20px; /* Sudut membulat seperti kartu dashboard */
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Bayangan modern */
+            position: relative;
+            /* Aspek Rasio 16:9 agar responsif */
+            aspect-ratio: 16 / 9;
+        }
+
+        #player-container:hover #custom-controls {
+            opacity: 1;
+        }
+
+        #youtube-player {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #custom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%); /* Posisi tengah bawah */
+            
+            display: flex;
+            gap: 10px;
+            
+            background-color: rgba(29, 27, 32, 0.8); /* Gelap transparan */
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 30px; /* Bentuk Pill/Kapsul */
+            border: 1px solid rgba(255,255,255,0.1);
+            
+            opacity: 0; /* Sembunyi saat diam */
+            transition: opacity 0.3s ease;
+        }
+
+        #custom-controls button {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        #custom-controls button:hover {
+            background: white;
+            color: #1D1B20;
+            transform: translateY(-2px);
+        }
+
+        /* Title row and back button */
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .back-button {
+           display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.1); 
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-button:hover,
+        .back-button:focus {
+            background-color: white;
+            color: #1D1B20;
+            transform: scale(1.05);
+        }
+
+        /* visible focus for keyboard navigation */
+        .back-button:focus-visible {
+            outline: 2px solid #4285f4;
+            outline-offset: 2px;
+        }
+
+        .back-button svg { width: 20px; height: 20px }
+
+    </style>
+</head>
+<body>
+    
+    <div class="title-row">
+        <a class="back-button" href="../index.html" title="Kembali ke beranda" aria-label="Kembali ke beranda">
+            <!-- Left arrow icon -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+        <h1>Pemutar Video YouTube Kustom</h1>
+    </div>
+
+    <div id="player-container">
+
+        <!-- Pemutar YouTube tanpa kontrol bawaan -->
+        <div id="youtube-player"></div>
+
+        <!-- Kontrol Kustom -->
+        <div id="custom-controls">
+            <button onclick="playVideo()">Play</button>
+            <button onclick="pauseVideo()">Pause</button>
+            <button onclick="stopVideo()">Stop</button>
+        </div>
+
+    </div>
+
+    <script>
+
+        // Buat Variabel global untuk objek player
+        var player;
+
+        // Fungsi API YouTube untuk menginisialisasi player
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player', {
+                height: '360',
+                width: '640',
+                videoId: 'a8dgNdJVluc', // Ganti dengan ID video YouTube yang ingin ditampilkan
+                playerVars: {
+                    'controls': 0, // Nonaktifkan kontrol bawaan
+                    'modestbranding': 1, // Minimalisasi branding YouTube
+                    'rel': 0,     // Nonaktifkan video terkait di akhir
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        // Fungsi yang dipanggil saat player siap
+        function onPlayerReady(event) {
+            console.log("Player siap.");
+        }
+
+        // Fungsi kontrol kustom
+        function playVideo() {
+            player.playVideo();
+        }
+
+        function pauseVideo() {
+            player.pauseVideo();
+        }
+
+        function stopVideo() {
+            player.stopVideo();
+        }
+
+        // Memuat API YouTube secara dinamis
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+        
+    </script>
+
+</body>
+</html>
